@@ -1,48 +1,65 @@
-// pins for the encoder inputs
-#define LH_ENCODER_A 2
-#define LH_ENCODER_B 4
+const int encoderPin = 2;
+const int ledPin =  13; 
 
-// resolution of encoder in degrees 
-const int DeltaTh = 30; 
+const int timeConst = 5;
 
-// variables to store the number of encoder pulses
-// for each motor
-volatile unsigned long leftCount = 0;
-unsigned long StartTime = millis();
-unsigned long LH_CurrentTime = 0; 
-unsigned long LH_LastTime = 0;
-unsigned long  LH_DeltaTime = 0;
-unsigned long  LH_Omega = 0;
- 
+volatile unsigned int cuenta = 0;
+volatile int encoderState = 0; 
+double rpms = 0; 
+
+float steps = 0;
+
 void setup() {
   // put your setup code here, to run once:
-  pinMode(LH_ENCODER_A, INPUT);
-  pinMode(LH_ENCODER_B, INPUT);
-  pinMode(RH_ENCODER_A, INPUT);
-  pinMode(RH_ENCODER_B, INPUT);
-  
-  // initialize hardware interrupts
-  attachInterrupt(0, leftEncoderEvent, CHANGE);
-  attachInterrupt(1, rightEncoderEvent, CHANGE);
-  
+  pinMode(encoderPin, INPUT);
+  pinMode(ledPin, OUTPUT);
+
+  // Start serial comunication
   Serial.begin(9600);
+    
+  // Attach an interrupt to the ISR vector
+  attachInterrupt(0, pin_ISR, CHANGE);
+  
+  //Configuracion del timmer2
+  SREG = (SREG & 0b01111111); //Desabilitar interrupciones
+  TIMSK2 = TIMSK2|0b00000001; //Habilita la interrupcion por desbordamiento
+  TCCR2B = 0b00000111; //Configura preescala para que FT2 sea de 7812.5Hz
+  //TCCR2B = 0b00000001; //Configura preescala para que FT2 sea de 8MHz
+  SREG = (SREG & 0b01111111) | 0b10000000; //Habilitar interrupciones //Desabilitar interrupciones
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
-  Serial.println(LH_Omega);
-  delay(1);
+  sendToPC(&rpms);
+  //Serial.println(rpms);
+  //delay(100);
 }
- 
-// encoder event for the interrupt call
-void leftEncoderEvent() {
-  LH_CurrentTime = millis();
-  LH_DeltaTime  = LH_CurrentTime - LH_LastTime;
-  LH_Omega = DeltaTh/LH_DeltaTime;
-  LH_LastTime = LH_CurrentTime; 
-}
- 
-// encoder event for the interrupt call
-void rightEncoderEvent() {
 
+
+// Timer2 interrupt
+ISR(TIMER2_OVF_vect){
+  // calculate rpms 
+  rpms = timeConst*steps; 
+  rpms = rpms/255;
+  // Reset count of steps
+  steps=0;
+  
 }
+
+// External pin Interrupt
+void pin_ISR() {
+  // Monitoring encoder via LED
+  //encoderState = digitalRead(encoderPin);
+  //digitalWrite(ledPin, encoderState);
+  // Counts of degrees
+  steps+=0.6;
+  
+}
+
+// Sent bytes over serial bus
+void sendToPC(double* data)
+{
+  byte* byteData = (byte*)(data);
+  Serial.write(byteData, 4);
+}
+
