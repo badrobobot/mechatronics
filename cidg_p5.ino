@@ -40,7 +40,7 @@ void loop() {
 ISR(TIMER2_OVF_vect){
   // calculate rpms 
   rpms = timeConst*steps; 
-  rpms = rpms/255;
+  rpms = rpms/100;
   // Reset count of steps
   steps=0;
   
@@ -62,4 +62,3 @@ void sendToPC(double* data)
   byte* byteData = (byte*)(data);
   Serial.write(byteData, 4);
 }
-
