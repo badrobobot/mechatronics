@@ -1,9 +1,27 @@
+// defines pins numbers
+const int stepPin = 3; 
+const int dirPin = 4;
+
+// define variables
 String inputString = "";         // a String to hold incoming data
 boolean stringComplete = false;  // whether the string is complete
 int degree = 0;
 
+ 
+int gradopaso = 0;
+int pasoact = 0;
+boolean sentido;
+int x = 0; 
+int tiempo=150;
+String leeCadena;
+int retardo=5;
+boolean isfirst=true;
+
+
 void setup() {
   // put your setup code here, to run once:
+  pinMode(stepPin,OUTPUT); 
+  pinMode(dirPin,OUTPUT);
   pinMode(13,OUTPUT);
   Serial.begin(9600);
   // reserve 200 bytes for the inputString:
@@ -14,11 +32,40 @@ void loop() {
   // put your main code here, to run repeatedly:
   if (stringComplete) {
     degree = inputString.toInt();
-    blink(degree);
+    isfirst = false;
+    gradopaso = degree; // Copy the degree
+    //blink(degree); // A function just to measure
     // clear the string:
     inputString = "";
     stringComplete = false;
-  } 
+  }
+
+  if(!isfirst){
+    
+    if((pasoact-gradopaso)>0){
+      sentido=true;
+      x=pasoact-gradopaso;
+    }
+    else {
+      sentido=false;
+      x=gradopaso-pasoact;
+    }
+
+    digitalWrite(dirPin,sentido); //Changes the rotations direction
+
+    while(x>0){
+      digitalWrite(stepPin,HIGH);
+      delay(tiempo);
+      digitalWrite(stepPin,LOW);
+      delay(tiempo);
+      x--;
+    }
+    
+    delay(1000);
+    pasoact=gradopaso;
+    x=0;
+    isfirst=true;
+  }
   
 }
 
