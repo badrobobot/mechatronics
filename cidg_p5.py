@@ -82,14 +82,14 @@ def main():
     xmin = 0
     xmax = maxPlotLength
     ymin = -(1)
-    ymax = 1
+    ymax = 3
     fig = plt.figure()
     ax = plt.axes(xlim=(xmin, xmax), ylim=(float(ymin - (ymax - ymin) / 10), float(ymax + (ymax - ymin) / 10)))
-    ax.set_title('Arduino Analog Read')
-    ax.set_xlabel("time")
-    ax.set_ylabel("AnalogRead Value")
+    ax.set_title('Motor Speed')
+    ax.set_xlabel("time[s]")
+    ax.set_ylabel("RPM[x10^2]")
 
-    lineLabel = 'Potentiometer Value'
+    lineLabel = 'MOTOR1 [x10^2]'
     timeText = ax.text(0.50, 0.95, '', transform=ax.transAxes)
     lines = ax.plot([], [], label=lineLabel)[0]
     lineValueText = ax.text(0.50, 0.90, '', transform=ax.transAxes)
